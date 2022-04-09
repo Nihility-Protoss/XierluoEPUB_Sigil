@@ -57,7 +57,7 @@ bk.writefile(Id, book)
 
 ```html
 <head>
-	<title></title>
+    <title></title>
     <link href="style/base_css.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
