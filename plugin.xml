@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+<name>CryFont</name>
+<type>edit</type>
+<author>Xierluo</author>
+<description>Font encryption</description>
+<engine>python3.4</engine>
+<version>1.1.6</version>
+<oslist>win</oslist>
+<autostart>true</autostart>
+<autoclose>true</autoclose>
+</plugin>
