@@ -92,7 +92,7 @@ bk.writefile(Id, book)
 ```
 
 效果图
-![Image text](https://github.com/Nihility-Protoss/XierluoEPUB_Sigil/tree/main/img_README/CryFont.png)
+![Image text](https://github.com/Nihility-Protoss/XierluoEPUB_Sigil/blob/main/img_README/CryFont.png)
 
 
 ## font
