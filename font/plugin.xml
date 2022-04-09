@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+<name>font</name>
+<type>edit</type>
+<author>无语</author>
+<autostart>false</autostart>
+<description>处理多看中不显示的字符（席尔洛微调版）</description>
+<engine>python3.4</engine>
+<version>0.1.1</version>
+<oslist>unx,win,osx</oslist>
+</plugin>
