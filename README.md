@@ -10,9 +10,9 @@
 
 ##### *使用方案：*
 
-下载Release中对应的压缩包即可使用，展示的代码仅包含关键部分，未包含所有支持项‘
+下载Release中对应的压缩包即可使用，github代码仅包含插件主体，未包含所有支持项
 
-在使用时，请确认有至少一个css文件，并确认每个xhtml文件均调用了至少一个css文件
+Release中的ttf文件为模板字体文件，可以自行替换为其他字体文件。
 
 ##### *代码解析：*
 
@@ -34,20 +34,37 @@ ttf_name = ''.join(c)
 cry_fonts_list = obfuscate_plus(easy_font, ttf_name)
 bk.addfile(ttf_name + ".ttf", ttf_name + ".ttf", f.read())
 
-# 修改css文件调用字体
-css_content = ""
-css_content += '@font-face {font-family: "cry_font";\n' \
-'src: url(../Fonts/' + ttf_name + ".ttf" + ');}\n'
-css_content += '.cry_font{font-family: cry_font;}\n'
-css_content += bk.readfile(css_id)
-bk.writefile(css_id, css_content)
+# 生成新的css文件调用字体
+def make_new_css(bk, html_file_name_list, ttf_name):
+    base_name = RandomName()
+    css_fmt = '@font-face {font-family: "cry_font_##";\n' \
+                   'src: url(../Fonts/' + ttf_name + ".ttf" + ');}\n'
+    css_fmt += '.cry_font_##{font-family: cry_font_##;}\n'
+    css_content = ""
+    for html_file_name in html_file_name_list:
+        css_content += css_fmt.replace("##", html_file_name)
+
+    bk.addfile(
+        uniqueid=base_name, basename=f"{base_name}.css",
+        data=css_content, mime="text/css"
+    )
+    return f"style/{base_name}.css"
 ```
 
 3、混淆文字替换
 
 ```python
 book = bk.readfile(Id)
-book = re.sub(r'<body.*?>.*</body>', lambda x: Convert(x, cry_fonts_dict), book, 0, re.S)
+book = re.sub(
+    "</head>",
+    f'<link href="{css_href}" rel="stylesheet" type="text/css"/>\n</head>',
+    book, 0, re.S
+)
+book = re.sub(
+    r'<body.*?>.*</body>',
+    lambda x: Convert(x, cry_fonts_dict, href.split(".")[0]),
+    book, 0, re.S
+)
 bk.writefile(Id, book)
 ```
 
@@ -76,10 +93,11 @@ bk.writefile(Id, book)
 ```html
 <head>
   <title></title>
-  <link href="style/base_css.css" rel="stylesheet" type="text/css"/>
+    <link href="style/base_css.css" rel="stylesheet" type="text/css"/>
+    <link href="{css_href}" rel="stylesheet" type="text/css"/>
 </head>
 <body>
-  <div class="cry_font">
+  <div class="cry_font_{file_name}">
     <p>詤斺......虠刮椯</p>
     <p>录歍潊辕觽骭缹肢騲椌韎漤腿颃馆忳篯嗛喛巗桖鄰瞘椯</p>
     <p>纮茪锈爨膑镺怐騲子桖袞锑鑲稂橱滎羑漤颃傦簅騲趎蹸要囆袞锑椯</p>
@@ -91,7 +109,7 @@ bk.writefile(Id, book)
 </body>
 ```
 
-效果图
+效果图(v1版本)
 ![Image text](https://github.com/Nihility-Protoss/XierluoEPUB_Sigil/blob/main/img_README/CryFont.png)
 
 
