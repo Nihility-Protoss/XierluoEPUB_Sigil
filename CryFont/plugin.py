@@ -5,13 +5,38 @@ import os
 import re
 import sys
 import base64
+import tkinter as tk
+from tkinter import messagebox
+
 from confuseFont import obfuscate_plus, easy_font
 
 
-def Convert(text, fonts_dict):
+def RandomName():
+    a = os.urandom(32)
+    b = base64.encodebytes(a).decode('utf8')
+    c = re.findall('[a-zA-Z]*', b)
+    d = ''.join(c)
+    # e = re.sub("[a-z]", '_', d)
+    # f = re.sub("[A-Z]", '*', e)
+    return d
+
+def Init(bk, _ttf_name):
+    ttf_name = _ttf_name
+    cry_fonts_list = obfuscate_plus(easy_font, ttf_name)
+    cry_fonts_list = [i for i in cry_fonts_list]
+    base_font_list = [i for i in easy_font]
+    cry_fonts_dict = dict(zip(base_font_list, cry_fonts_list))
+
+    f = open(ttf_name + '.ttf', 'rb')
+    bk.addfile(ttf_name + ".ttf", ttf_name + ".ttf", f.read())
+    f.close()
+    os.remove(ttf_name + ".ttf")
+    return cry_fonts_dict
+
+def Convert(text, fonts_dict, file_name):
     def body_head(match):
         result = match.group()
-        return result + '\n<div class="cry_font">\n'
+        return result + '\n<div class="cry_font_##">\n'.replace("##", file_name)
 
     def body_last(match):
         result = match.group()
@@ -31,35 +56,62 @@ def Convert(text, fonts_dict):
     Result = re.sub(r'.+', MAPPING, text.group(), 0, re.S)
     return Result
 
+def make_new_css(bk, html_file_name_list, ttf_name):
+    base_name = RandomName()
+    css_fmt = '@font-face {font-family: "cry_font_##";\n' \
+                   'src: url(../Fonts/' + ttf_name + ".ttf" + ');}\n'
+    css_fmt += '.cry_font_##{font-family: cry_font_##;}\n'
+    css_content = ""
+    for html_file_name in html_file_name_list:
+        css_content += css_fmt.replace("##", html_file_name)
+
+    bk.addfile(
+        uniqueid=base_name, basename=f"{base_name}.css",
+        data=css_content, mime="text/css"
+    )
+    return f"style/{base_name}.css"
 
 def run(bk):
-    a = os.urandom(32)
-    b = base64.encodebytes(a).decode('utf8')
-    c = re.findall('[a-zA-Z]*', b)
-    ttf_name = ''.join(c)
-    cry_fonts_list = obfuscate_plus(easy_font, ttf_name)
-    cry_fonts_list = [i for i in cry_fonts_list]
-    base_font_list = [i for i in easy_font]
-    cry_fonts_dict = dict(zip(base_font_list, cry_fonts_list))
+    ttf_name = RandomName()
+    cry_fonts_dict = Init(bk, ttf_name)
+    text_iter = [(_i,_j) for _i,_j in bk.text_iter()]
 
-    f = open(ttf_name + '.ttf', 'rb')
-    bk.addfile(ttf_name + ".ttf", ttf_name + ".ttf", f.read())
-    f.close()
-    os.remove(ttf_name + ".ttf")
-    for css_id, href in bk.css_iter():
-        css_content = ""
-        css_content += '@font-face {font-family: "cry_font";\n' \
-                       'src: url(../Fonts/' + ttf_name + ".ttf" + ');}\n'
-        css_content += '.cry_font{font-family: cry_font;}\n'
-        css_content += bk.readfile(css_id)
-        bk.writefile(css_id, css_content)
+    # 创建主窗口
+    root = tk.Tk()
+    root.title("List Selection")
+    # 创建列表框
+    listbox = tk.Listbox(root, selectmode=tk.MULTIPLE, height=len(text_iter))
+    listbox.pack(padx=20, pady=50)
+    # 将数据添加到列表框
+    for item in text_iter:
+        listbox.insert(tk.END, item)
+    def run_selected_items():
+        selected_indices = listbox.curselection()
+        selected_items = [listbox.get(i) for i in selected_indices]
+        file_name_list = []
+        for Id, href in selected_items:
+            file_name_list.append(href.split(".")[0])
+        css_href = make_new_css(bk, file_name_list, ttf_name)
+        for Id, href in selected_items:
+            book = bk.readfile(Id)
+            book = re.sub(
+                "</head>",
+                f'<link href="{css_href}" rel="stylesheet" type="text/css"/>\n</head>',
+                book, 0, re.S
+            )
+            book = re.sub(
+                r'<body.*?>.*</body>',
+                lambda x: Convert(x, cry_fonts_dict, href.split(".")[0]),
+                book, 0, re.S
+            )
+            bk.writefile(Id, book)
+        root.quit()
 
-    for Id, href in bk.text_iter():
-        book = bk.readfile(Id)
-        book = re.sub(r'<body.*?>.*</body>', lambda x: Convert(x, cry_fonts_dict),
-                      book, 0, re.S)
-        bk.writefile(Id, book)
+    # 创建按钮
+    button = tk.Button(root, text="Run Crypto Font", command=run_selected_items)
+    button.pack(pady=10)
 
+    root.mainloop()
     return 0
 
 
