@@ -6,7 +6,7 @@ import re
 import sys
 import base64
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk
 
 from confuseFont import obfuscate_plus, easy_font
 
@@ -79,15 +79,37 @@ def run(bk):
     # 创建主窗口
     root = tk.Tk()
     root.title("List Selection")
-    # 创建列表框
-    listbox = tk.Listbox(root, selectmode=tk.MULTIPLE, height=len(text_iter))
-    listbox.pack(padx=20, pady=50)
-    # 将数据添加到列表框
-    for item in text_iter:
-        listbox.insert(tk.END, item)
+
+    # 创建Treeview
+    tree = ttk.Treeview(root, columns=("Checkbox", "Data1", "Data2"), show="headings")
+    tree.column("#0", width=0, stretch=tk.NO)
+    tree.column("Checkbox", anchor=tk.CENTER, width=50)
+    tree.column("Data1", anchor=tk.W, width=150)
+    tree.column("Data2", anchor=tk.W, width=150)
+    tree.heading("Checkbox", text="")
+    tree.heading("Data1", text="guid")
+    tree.heading("Data2", text="pref")
+
+    # 填充数据
+    for index, (data1, data2) in enumerate(text_iter):
+        tree.insert(parent="", index=tk.END, iid=index, values=(f"{index}", data1, data2))
+        tree.tag_configure(f"{index}", background="#f0f0f0")  # 设置背景色
+        tree.tag_bind(f"{index}", "<Button-1>", lambda _=index: toggle_checkbox(_))
+
+    # 创建复选框
+    checkboxes = {}
+    for index in range(len(text_iter)):
+        checkboxes[index] = tk.BooleanVar()
+        tree.set(index, "Checkbox", "")
+
+    def toggle_checkbox(_):
+        checkboxes[_].set(not checkboxes[_].get())
+        tree.set(_, "Checkbox", "✓" if checkboxes[_].get() else "")
+
     def run_selected_items():
-        selected_indices = listbox.curselection()
-        selected_items = [listbox.get(i) for i in selected_indices]
+        selected_items = []
+        for i in tree.selection():
+            selected_items.append(tree.item(i)['values'])
         file_name_list = []
         for Id, href in selected_items:
             file_name_list.append(href.split(".")[0])
