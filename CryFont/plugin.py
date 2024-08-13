@@ -81,35 +81,45 @@ def run(bk):
     root.title("List Selection")
 
     # 创建Treeview
-    tree = ttk.Treeview(root, columns=("Checkbox", "Data1", "Data2"), show="headings")
+    tree = ttk.Treeview(
+        root, columns=("Data1", "Data2"),
+        # columns=("Checkbox", "Data1", "Data2"),
+        show="headings", height=len(text_iter), style="Treeview"
+    )
     tree.column("#0", width=0, stretch=tk.NO)
-    tree.column("Checkbox", anchor=tk.CENTER, width=50)
+    # tree.column("Checkbox", anchor=tk.CENTER, width=50)
     tree.column("Data1", anchor=tk.W, width=150)
     tree.column("Data2", anchor=tk.W, width=150)
-    tree.heading("Checkbox", text="")
+    # tree.heading("Checkbox", text="")
     tree.heading("Data1", text="guid")
     tree.heading("Data2", text="pref")
 
+    # # 添加垂直滚动条控件
+    # scroll_bar = ttk.Scrollbar(root, orient=tk.VERTICAL, command=tree.yview)
+    # scroll_bar.grid(row=0, column=1, sticky='ns')
+    # # 滚动条与 Treeview 控件进行关联
+    # tree.configure(yscrollcommand=scroll_bar.set)
+
     # 填充数据
     for index, (data1, data2) in enumerate(text_iter):
-        tree.insert(parent="", index=tk.END, iid=index, values=(f"{index}", data1, data2))
+        tree.insert(parent="", index=tk.END, iid=index, values=(data1, data2))
         tree.tag_configure(f"{index}", background="#f0f0f0")  # 设置背景色
-        tree.tag_bind(f"{index}", "<Button-1>", lambda _=index: toggle_checkbox(_))
+        # tree.tag_bind(f"{index}", "<Button-1>", lambda event, _=index: toggle_checkbox(event, _))
 
-    # 创建复选框
-    checkboxes = {}
-    for index in range(len(text_iter)):
-        checkboxes[index] = tk.BooleanVar()
-        tree.set(index, "Checkbox", "")
-
-    def toggle_checkbox(_):
-        checkboxes[_].set(not checkboxes[_].get())
-        tree.set(_, "Checkbox", "✓" if checkboxes[_].get() else "")
+    # # 创建复选框
+    # checkboxes = {}
+    # for index in range(len(text_iter)):
+    #     checkboxes[index] = tk.BooleanVar()
+    #     tree.set(index, "Checkbox", "×")
+    # def toggle_checkbox(event, _):
+    #     checkboxes[_].set(not checkboxes[_].get())
+    #     tree.set(_, "Checkbox", "✓" if checkboxes[_].get() else "×")
 
     def run_selected_items():
         selected_items = []
         for i in tree.selection():
             selected_items.append(tree.item(i)['values'])
+        print(selected_items)
         file_name_list = []
         for Id, href in selected_items:
             file_name_list.append(href.split(".")[0])
@@ -129,7 +139,12 @@ def run(bk):
             bk.writefile(Id, book)
         root.quit()
 
-    # 创建按钮
+    tree.pack()
+
+    introduction_text = "请在上述列表中，Ctrl选取 或 Shift选取"
+    label = tk.Label(root, text=introduction_text, justify=tk.LEFT)
+    label.pack(padx=10, pady=10)
+
     button = tk.Button(root, text="Run Crypto Font", command=run_selected_items)
     button.pack(pady=10)
 
