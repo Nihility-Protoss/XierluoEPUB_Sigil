@@ -110,8 +110,32 @@ bk.writefile(Id, book)
 ```
 
 效果图(v1版本)
-![Image text](https://github.com/Nihility-Protoss/XierluoEPUB_Sigil/blob/main/img_README/CryFont.png)
+![Image v1](https://github.com/Nihility-Protoss/XierluoEPUB_Sigil/blob/main/img_README/CryFont.png)
 
+效果图(v2版本)
+![Image v2](https://github.com/Nihility-Protoss/XierluoEPUB_Sigil/blob/main/img_README/CryFont_v2.png)
+
+注：注意到标题使用了 `<p class="pius1">` 通过css发现该css有如下定义：
+
+```css
+.pius1{
+    font-family: illus1;
+}
+```
+
+而解密的css有如下内容：
+
+```css
+@font-face {
+    font-family: "cry_font_General0001";
+    src: url(../Fonts/voxsZAIBvxlsZBLFgqpzXBYILUnXmqPJmKc.ttf);
+}
+.cry_font_General0001{
+    font-family: cry_font_General0001;
+}
+```
+
+即因为font-family进行字体家族设置导致的冲突，解密的css无法顺利运行
 
 ## font
 
