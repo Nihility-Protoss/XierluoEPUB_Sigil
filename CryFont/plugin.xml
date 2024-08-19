@@ -5,7 +5,7 @@
 <author>Xierluo</author>
 <description>Font encryption</description>
 <engine>python3.4</engine>
-<version>2.1.1</version>
+<version>2.2.0</version>
 <oslist>win</oslist>
 <autostart>true</autostart>
 <autoclose>true</autoclose>

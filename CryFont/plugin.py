@@ -36,7 +36,7 @@ def Init(bk, _ttf_name):
 def Convert(text, fonts_dict, file_name):
     def body_head(match):
         result = match.group()
-        return result + '\n<div class="cry_font_##">\n'.replace("##", file_name)
+        return result + '\n<div class="cry_font_##">\n'.replace("##", file_name.replace("/", "_"))
 
     def body_last(match):
         result = match.group()
@@ -63,12 +63,16 @@ def make_new_css(bk, html_file_name_list, ttf_name):
     css_fmt += '.cry_font_##{font-family: cry_font_##;}\n'
     css_content = ""
     for html_file_name in html_file_name_list:
-        css_content += css_fmt.replace("##", html_file_name)
+        css_content += css_fmt.replace("##", html_file_name.replace("/", "_"))
 
     bk.addfile(
         uniqueid=base_name, basename=f"{base_name}.css",
         data=css_content, mime="text/css"
     )
+    css_all = [(_i,_j) for _i, _j in bk.css_iter()]
+    for _i, _j in css_all:
+        if _i == base_name:
+            return _j
     return f"style/{base_name}.css"
 
 def run(bk):
