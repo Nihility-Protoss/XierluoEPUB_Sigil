@@ -118,6 +118,10 @@ bk.writefile(Id, book)
 注：注意到标题使用了 `<p class="pius1">` 通过css发现该css有如下定义：
 
 ```css
+@font-face{
+    font-family: "illus1";
+    src: url(../Fonts/illus1.ttf);
+}
 .pius1{
     font-family: illus1;
 }
